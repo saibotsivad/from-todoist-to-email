@@ -1,10 +1,10 @@
 name: check-todoist
 
-on:
-  push:
-    branches: [ '*' ]
-  schedule:
-    - cron:  '0 */2 * * *'
+# on:
+#   push:
+#     branches: [ '*' ]
+#   schedule:
+#     - cron:  '0 */2 * * *'
 
 jobs:
   check-todoist:
