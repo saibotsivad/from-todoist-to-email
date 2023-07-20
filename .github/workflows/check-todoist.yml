@@ -1,0 +1,24 @@
+name: check-todoist
+
+on:
+  push:
+    branches: [ '*' ]
+
+jobs:
+  build:
+    environment: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: 16.x
+    - run: npm ci
+    - run: npm run sync
+      env:
+        MONGODB_API_URL: ${{secrets.MONGODB_API_URL}}
+        MONGODB_API_KEY: ${{secrets.MONGODB_API_KEY}}
+        MONGODB_DATABASE_NAME: ${{secrets.MONGODB_DATABASE_NAME}}
+        MONGODB_CLUSTER_NAME: ${{secrets.MONGODB_CLUSTER_NAME}}
+        MONGODB_COLLECTION_NAME: ${{secrets.MONGODB_COLLECTION_NAME}}
