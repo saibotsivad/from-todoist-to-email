@@ -3,6 +3,8 @@ name: check-todoist
 on:
   push:
     branches: [ '*' ]
+  schedule:
+    - cron:  '*/30 * * * *'
 
 jobs:
   check-todoist:
