@@ -7,6 +7,7 @@
     "sync": "node index.js"
   },
   "dependencies": {
+    "@aws-sdk/client-sns": "^3.370.0",
     "httpie": "^1.1.2"
   }
 }

@@ -1,4 +1,8 @@
 import { get, post, del } from 'httpie'
+import  { SNSClient, PublishCommand } from '@aws-sdk/client-sns'
+
+const REGION = 'us-east-1'
+const sns = new SNSClient({ region: REGION })
 
 const { TODOIST_API_KEY } = process.env
 if (!TODOIST_API_KEY) {
@@ -30,19 +34,38 @@ const todoist = {
 
 const tasks = await todoist.tasks.get()
 
-let block = 'todoist:\n  date: ' + new Date().toISOString() + '\n  inbox:'
+let block = ''
 if (tasks.length) {
-	for (const { id, content, description, due } of tasks) {
-		block += ('\n    - content: ' + content)
-		if (description) block += ('\n      description: ' + description)
+	for (const { content, description, due } of tasks) {
+		block += content
+		if (description) block += ('\n' + description)
 		if (due) {
-			block += '\n      due:'
+			block += '\ndue:'
 			const { datetime, string, is_recurring } = due
-			if (string) block += ('\n        string: ' + string)
-			if (datetime) block += ('\n        datetime: ' + datetime)
-			if (is_recurring) block += ('\n        recurring: true')
+			if (string) block += ('\n    string: ' + string)
+			if (datetime) block += ('\n    datetime: ' + datetime)
+			if (is_recurring) block += ('\n    recurring: true')
 		}
+		block += '\n\n\n\n'
 	}
 }
 
-console.log('========== OUTPUT ==========\n' + block)
+let sent
+try {
+	const data = await sns.send(new PublishCommand({
+		Message: block,
+		TopicArn: 'arn:aws:sns:us-east-1:190776193724:from-todoist-to-email',
+	}))
+	console.log('Sent!', JSON.stringify(data, undefined, 4))
+	sent = true
+} catch (error) {
+	console.log('Error!', JSON.stringify(error, undefined, 4))
+	console.error(error)
+}
+
+if (sent) {
+	for (const { id } of tasks) {
+		await todoist.tasks.del(id)
+	}
+	console.log('All old tasks deleted')
+}
